@@ -1,8 +1,6 @@
 const { createClient } = require('@supabase/supabase-js');
 const { Configuration, OpenAIApi } = require('openai');
 const { tsv2json } = require ('tsv-json');
-const fs = require('fs');
-const fsPromises = fs.promises;
 const df = require('dotenv-flow');
 df.config();
 
@@ -19,6 +17,12 @@ async function generateEmbeddings() {
   const openai = new OpenAIApi(openaiConfiguration);
 
   const queryData = await getQueryData();
+
+  // Clear the old values
+  await supabaseClient
+    .from('queries')
+    .delete()
+    .not('id', 'is', null);
 
   for (const qd of queryData) {
     console.log("create embedding: \"" + qd.query + "\"");
@@ -37,10 +41,19 @@ async function generateEmbeddings() {
 }
 
 async function getQueryData() {
-  const filehandle = await fsPromises.open('scripts\\queries.tsv');
-  const data = await filehandle.readFile('utf-8');
+  const supabaseClient = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL, 
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  );
 
-  const json = tsv2json(data);
+  const { data, error } = await supabaseClient
+    .storage
+    .from('resources')
+    .download('queries.tsv');
+
+  const tsvText = await data.text();
+
+  const json = tsv2json(tsvText);
   const formatted = json.map(item => {
     return { 
       query: item[0],
@@ -48,7 +61,6 @@ async function getQueryData() {
     };
   });
 
-  filehandle.close();
   return formatted;
 }
 
