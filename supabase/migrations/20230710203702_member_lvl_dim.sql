@@ -2,6 +2,7 @@
 create extension if not exists vector;
 
 -- Create a table to store your documents
+drop table if exists member_lvl_dim cascade;
 create table member_lvl_dim (
   id bigserial primary key,
   content text, -- corresponds to Document.pageContent
