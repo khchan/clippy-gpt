@@ -10,7 +10,7 @@ create table member_lvl_dim (
 );
 
 -- Create a function to search for documents
-create function match_queries (
+create function member_lvl_match_queries (
   query_embedding vector(1536),
   match_count int default null,
   filter jsonb DEFAULT '{}'
