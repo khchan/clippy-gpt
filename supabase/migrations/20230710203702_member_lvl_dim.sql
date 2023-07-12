@@ -32,7 +32,7 @@ begin
     metadata,
     1 - (member_lvl_dim.embedding <=> query_embedding) as similarity
   from member_lvl_dim
-  where metadata @> filter
+  where filter = '{}'::jsonb or metadata @> filter
   order by member_lvl_dim.embedding <=> query_embedding
   limit match_count;
 end;

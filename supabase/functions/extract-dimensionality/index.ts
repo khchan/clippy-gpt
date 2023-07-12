@@ -6,8 +6,8 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js";
 serve(async (req) => {
   const { query } = await req.json()
   const client = await createClient(
-    Deno.env.get('NEXT_PUBLIC_SUPABASE_URL'), 
-    Deno.env.get('NEXT_PUBLIC_SUPABASE_ANON_KEY'),
+    Deno.env.get('SUPABASE_URL'), 
+    Deno.env.get('SUPABASE_ANON_KEY'),
     {
       auth: {
         persistSession: false
@@ -16,7 +16,7 @@ serve(async (req) => {
   );
 
   const vectorStore = await SupabaseVectorStore.fromExistingIndex(
-    new OpenAIEmbeddings({ openAIApiKey: Deno.env.get('OPENAI_API_KEY') }),
+    new OpenAIEmbeddings({ openAIApiKey: Deno.env.get('OPEN_AI_API_KEY') }),
     {
       client,
       tableName: "queries",
@@ -24,7 +24,7 @@ serve(async (req) => {
     }
   );
 
-  const response = vectorStore.similaritySearch(query, 1);
+  const response = await vectorStore.similaritySearch(query, 1);
   
   return new Response(
     JSON.stringify(response),

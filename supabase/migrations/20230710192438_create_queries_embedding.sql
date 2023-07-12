@@ -31,7 +31,7 @@ begin
     metadata,
     1 - (queries.embedding <=> query_embedding) as similarity
   from queries
-  where metadata @> filter
+  where filter = '{}'::jsonb or metadata @> filter
   order by queries.embedding <=> query_embedding
   limit match_count;
 end;
