@@ -1,6 +1,6 @@
 "use client";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
-import { useEffect, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 
 export default function Index() {
   const [employees, setEmployees] = useState<any[]>([]);
@@ -15,7 +15,8 @@ export default function Index() {
       });
   }, [setEmployees]);
 
-  const submitQuestion = async () => {
+  const submitQuestion = async (event: FormEvent) => {
+    event.preventDefault();
     fetch("/api/functions/extract-dimensionality", {
         method: "POST",
         body: JSON.stringify({ query }),
@@ -36,13 +37,18 @@ export default function Index() {
         ))}
       </ul>
 
-      <input
-        type="text"
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-      />
-      <button onClick={() => submitQuestion()}>Submit</button>
-      <p>Response: {JSON.stringify(response)}</p>
+      <br/>
+
+      <form onSubmit={submitQuestion}>
+        <input
+          type="text"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+        />
+        <button>Submit</button>
+      </form>
+      
+      <span>Response: {JSON.stringify(response)}</span>
     </div>
   );
 }

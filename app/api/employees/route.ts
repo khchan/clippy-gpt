@@ -1,12 +1,15 @@
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
 import { cookies } from 'next/headers'
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 
-export async function GET() {
+// without this, nextjs renders this route as static HTML for some reason ffs
+export const dynamic = 'force-dynamic'
+
+export async function GET(request: NextRequest) {
   // Create a Supabase client configured to use cookies
   const supabase = createRouteHandlerClient({ cookies })
   
-  const { data: employees } = await supabase.from('employees').select()
+  const response = await supabase.from('employees').select()
 
-  return NextResponse.json(employees)
+  return NextResponse.json(response.data);
 }
