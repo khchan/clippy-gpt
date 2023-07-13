@@ -1,7 +1,6 @@
 {
   "private": true,
   "scripts": {
-    "generateEmbeddings": "node scripts/generateEmbeddings.js",
     "dev": "next dev",
     "build": "next build",
     "start": "next start"
@@ -11,6 +10,7 @@
     "@supabase/supabase-js": "latest",
     "autoprefixer": "10.4.14",
     "dotenv-flow": "^3.2.0",
+    "langchain": "^0.0.108",
     "next": "latest",
     "openai": "^3.3.0",
     "postcss": "8.4.24",

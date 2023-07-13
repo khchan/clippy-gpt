@@ -3,21 +3,21 @@ import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { FormEvent, useEffect, useState } from "react";
 
 export default function Index() {
-  const [employees, setEmployees] = useState<any[]>([]);
+  const [model, setModel] = useState<any[]>([]);
   const [query, setQuery] = useState<string>("");
   const [response, setResponse] = useState({});
 
   useEffect(() => {
-    fetch('/api/employees')
+    fetch('/api/model')
       .then((res) => res.json())
       .then((resp) => {
-        setEmployees(resp);
+        setModel(resp);
       });
-  }, [setEmployees]);
+  }, [setModel]);
 
   const submitQuestion = async (event: FormEvent) => {
     event.preventDefault();
-    fetch("/api/functions/extract-dimensionality", {
+    fetch("/api/query", {
         method: "POST",
         body: JSON.stringify({ query }),
         headers: {
@@ -30,10 +30,11 @@ export default function Index() {
 
   return (
     <div>
-      <h1>Hello Employees!</h1>
+      <h1>Loaded Model:</h1>
       <ul className="my-auto">
-        {employees?.map((e) => (
-          <li key={e.id}>{e.name}</li>
+        {model?.map((m) => (
+          // <li key={e.id}>{e.name}</li>
+          <li>{JSON.stringify(m)}</li>
         ))}
       </ul>
 
