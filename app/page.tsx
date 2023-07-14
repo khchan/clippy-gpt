@@ -1,55 +1,65 @@
 "use client";
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+
 import { FormEvent, useEffect, useState } from "react";
+import Banner from "@/components/Banner";
+import ChatInputFooter from "@/components/ChatInputFooter";
+import { ChatMessage, ModelSummary, Role, SimilaritySearchResponse } from "./types";
+import MessageList from "@/components/MessageList";
 
 export default function Index() {
-  const [model, setModel] = useState<any[]>([]);
   const [query, setQuery] = useState<string>("");
-  const [response, setResponse] = useState({});
+  const [awaitingResponse, setAwaitingResponse] = useState<boolean>(true);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
 
   useEffect(() => {
-    fetch('/api/model')
+    fetch("/api/model")
       .then((res) => res.json())
-      .then((resp) => {
-        setModel(resp);
+      .then((model: ModelSummary[]) => {
+        const message = `Here's some stats about the loaded model:\n${model.map(m => {
+          return `${m.table} (${m.count})`;
+        }).join(", ")}`
+        setMessages([...messages, {content: message, role: Role.System}]);
+        setAwaitingResponse(false);
       });
-  }, [setModel]);
+  }, []);
 
-  const submitQuestion = async (event: FormEvent) => {
+  const submitQuestion = (event: FormEvent) => {
     event.preventDefault();
+    // add user message
+    const updatedMessages = [...messages, {content: query, role: Role.User}]
+    setMessages(updatedMessages);
+    setAwaitingResponse(true);
     fetch("/api/query", {
-        method: "POST",
-        body: JSON.stringify({ query }),
-        headers: {
-          "Content-type": "application/json; charset=UTF-8"
-        }
+      method: "POST",
+      body: JSON.stringify({ query }),
+      headers: {
+        "Content-type": "application/json; charset=UTF-8",
+      },
     })
-    .then((res) => res.json())
-    .then((res) => setResponse(res[0]));
+      .then((res) => res.json())
+      .then((res) => {
+        const response = res[0] as SimilaritySearchResponse;
+        setQuery("");
+        // add system response message
+        setMessages([...updatedMessages, {content: JSON.stringify(response), role: Role.System}]);
+        setAwaitingResponse(false);
+      });
   };
 
   return (
-    <div>
-      <h1>Loaded Model:</h1>
-      <ul className="my-auto">
-        {model?.map((m) => (
-          // <li key={e.id}>{e.name}</li>
-          <li>{JSON.stringify(m)}</li>
-        ))}
-      </ul>
+    <div className="w-screen h-full bg-gray-50 flex flex-col">
+      <Banner />
 
-      <br/>
+      <div className="min-h-screen bg-gray-100 p-8 pb-24">
+          <MessageList messages={messages} />
+      </div>
 
-      <form onSubmit={submitQuestion}>
-        <input
-          type="text"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-        />
-        <button>Submit</button>
-      </form>
-      
-      <span>Response: {JSON.stringify(response)}</span>
+      <ChatInputFooter
+        submitQuestion={submitQuestion}
+        awaitingResponse={awaitingResponse}
+        query={query}
+        setQuery={setQuery}
+      />
     </div>
   );
 }

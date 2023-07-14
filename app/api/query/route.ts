@@ -28,5 +28,9 @@ async function extractDimensionality(query: string, client: SupabaseClient) {
         }
     );
 
-    return await vectorStore.similaritySearch(query, 1);
+    const response = await vectorStore.similaritySearchWithScore(query, 1);
+    return response.map((r) => {
+        const [document, score] = r;
+        return {...document, score};
+    });
 }

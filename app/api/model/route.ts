@@ -1,3 +1,4 @@
+import { ModelSummary } from '@/app/types';
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
 import { cookies } from 'next/headers'
 import { NextRequest, NextResponse } from 'next/server'
@@ -11,17 +12,18 @@ const tables = [
     'periodyear',
     'product',
     'store',
-    'modelvalues'
+    'modelvalues',
+    'queries'
 ];
 
 export async function GET(request: NextRequest) {
     // Create a Supabase client configured to use cookies
     const supabase = createRouteHandlerClient({ cookies })
 
-    const response = tables.map(async (table) => {
-        const resp = await supabase.from('account').select('*', { count: 'exact', head: true });
-        return resp.data;
-    });
+    const response: ModelSummary[] = await Promise.all(tables.map(async (table) => {
+        const { count } = await supabase.from(table).select('*', { count: 'exact', head: true });
+        return {table: table, count: count} as ModelSummary;
+    }));
 
     return NextResponse.json(response);
 }
