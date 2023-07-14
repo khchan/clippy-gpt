@@ -13,14 +13,15 @@ export async function POST(request: NextRequest) {
     // Create a Supabase client configured to use cookies
     const supabase = createRouteHandlerClient({ cookies })
 
-    const response = await extractDimensionality(query, supabase);
+    const response = await extractSimilarity(query, supabase);
 
     return NextResponse.json(response);
 }
 
-async function extractDimensionality(query: string, client: SupabaseClient) {
-    const vectorStore = await SupabaseVectorStore.fromExistingIndex(
-        new OpenAIEmbeddings({ openAIApiKey: process.env.OPEN_AI_API_KEY }),
+async function extractSimilarity(query: string, client: SupabaseClient) {
+    const embeddings = new OpenAIEmbeddings({ openAIApiKey: process.env.OPEN_AI_API_KEY });
+    const dimensionalityStore = await SupabaseVectorStore.fromExistingIndex(
+        embeddings,
         {
             client,
             tableName: "queries",
@@ -28,9 +29,26 @@ async function extractDimensionality(query: string, client: SupabaseClient) {
         }
     );
 
-    const response = await vectorStore.similaritySearchWithScore(query, 1);
-    return response.map((r) => {
+    const memberStore = await SupabaseVectorStore.fromExistingIndex(
+        embeddings,
+        {
+            client,
+            tableName: "member_lvl_dim",
+            queryName: "match_members",
+        }
+    );
+
+    const dimensionalityResponse = await dimensionalityStore.similaritySearchWithScore(query);
+    const dimensionality = dimensionalityResponse.map((r) => {
         const [document, score] = r;
         return {...document, score};
     });
+
+    const memberResponse = await memberStore.similaritySearchWithScore(query);
+    const members = memberResponse.map((r) => {
+        const [document, score] = r;
+        return {...document, score};
+    });
+
+    return {dimensionality, members};
 }

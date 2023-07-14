@@ -38,10 +38,14 @@ export default function Index() {
     })
       .then((res) => res.json())
       .then((res) => {
-        const response = res[0] as SimilaritySearchResponse;
         setQuery("");
         // add system response message
-        setMessages([...updatedMessages, {content: JSON.stringify(response), role: Role.System}]);
+        setMessages([...updatedMessages, {content: JSON.stringify(res), role: Role.System}]);
+        setAwaitingResponse(false);
+      })
+      .catch((err) => {
+        console.error(err);
+        setMessages([...updatedMessages, {content: "An error occurred, please try again later!", role: Role.System}]);
         setAwaitingResponse(false);
       });
   };

@@ -55,7 +55,7 @@ async function getQueryData(supabaseClient) {
   const formatted = json.map(item => {
     return { 
       query: item[0],
-      metadata: item[1]
+      metadata: JSON.parse(item[1])
     };
   });
 

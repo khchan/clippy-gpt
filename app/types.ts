@@ -7,8 +7,14 @@ export type ModelSummary = {
 }
 
 export type SimilaritySearchResponse = {
+    dimensionality: SimilarityResult[],
+    members: SimilarityResult[]
+}
+
+export type SimilarityResult = {
     pageContent: string,
-    metadata: object
+    metadata: object,
+    score: number
 }
 
 export type ChatMessage = {
