@@ -3,7 +3,7 @@
 import { FormEvent, useEffect, useState } from "react";
 import Banner from "@/components/Banner";
 import ChatInputFooter from "@/components/ChatInputFooter";
-import { ChatMessage, ModelSummary, Role, SimilaritySearchResponse } from "./types";
+import { ChatMessage, ModelSummary, Role } from "./types";
 import MessageList from "@/components/MessageList";
 
 export default function Index() {
@@ -55,7 +55,7 @@ export default function Index() {
       <Banner />
 
       <div className="min-h-screen bg-gray-100 p-8 pb-24">
-          <MessageList messages={messages} />
+          <MessageList messages={messages} awaitingResponse={awaitingResponse} />
       </div>
 
       <ChatInputFooter
