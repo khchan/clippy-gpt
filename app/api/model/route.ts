@@ -12,8 +12,7 @@ const tables = [
     'periodyear',
     'product',
     'store',
-    'modelvalues',
-    'queries'
+    'modelvalues'
 ];
 
 export async function GET(request: NextRequest) {
