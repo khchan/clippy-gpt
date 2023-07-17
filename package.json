@@ -3,8 +3,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start",
-    "member-embeddings": "node supabase/functions/generate-member-embeddings/script.mjs"
+    "start": "next start"
   },
   "dependencies": {
     "@supabase/auth-helpers-nextjs": "latest",

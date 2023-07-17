@@ -1,40 +1,48 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { createClient } from 'https://esm.sh/@supabase/supabase-js';
-import { OpenAI } from "https://deno.land/x/openai/mod.ts";
-import { tsv2json } from 'https://esm.sh/tsv-json';
+import { createClient, SupabaseClient } from 'https://esm.sh/@supabase/supabase-js';
+import { Document } from "https://esm.sh/langchain/document";
+import { OpenAIEmbeddings } from "https://esm.sh/langchain/embeddings/openai";
+import { SupabaseVectorStore } from "https://esm.sh/langchain/vectorstores/supabase";
+import { readerFromStreamReader } from "https://deno.land/std@0.160.0/streams/conversion.ts";
+import { readCSVObjects } from "https://deno.land/x/csv@v0.8.0/mod.ts";
 
-serve(async (req) => {
-  const supabaseClient = createClient(
+serve(async (_req) => {
+  const client = createClient(
     Deno.env.get('SUPABASE_URL'),
     Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
   );
-  const openAI = new OpenAI(Deno.env.get('OPEN_AI_API_KEY'));
+
+  const embeddings = new OpenAIEmbeddings({
+    openAIApiKey: Deno.env.get('OPEN_AI_API_KEY'),
+  });
 
   // Clear the old values
-  await clearQueriesTable(supabaseClient);
-  // Get the new values
-  const queryData = await getQueryData(supabaseClient);
+  await clearQueriesTable(client);
 
-  for (const data of queryData) {
-    console.log("create embedding: \"" + data.query + "\"");
-    const embedding = await getOpenAIEmbedding(openAI, data.query);
+  const { data, error } = await client
+    .storage
+    .from('resources')
+    .download('hierarchies.csv');
 
-    // Add the new record
-    await supabaseClient.from('member_lvl_dim').insert({
-      content: data.query,
-      metadata: data.metadata,
-      embedding
-    });
+  if (!data || error) {
+    throw new Error(`Data was empty or error occurred: ${error}`);
   }
 
-  console.log("Done.");
+  const documents = await parseBlobToDocuments(data);
+
+  await SupabaseVectorStore.fromDocuments(documents, embeddings, {
+    client,
+    tableName: "member_lvl_dim",
+    queryName: "match_members",
+  });
+
   return new Response(
-    "Added " + queryData.length + " embeddings.",
+    "Added " + documents.length + " embeddings.",
     { headers: { "Content-Type": "application/json" } },
   )
 });
 
-async function clearQueriesTable(supabaseClient) {
+async function clearQueriesTable(supabaseClient: SupabaseClient) {
   // Need a filter when deleting records, so I have a filter
   // that just returns everything (id is not null)
   await supabaseClient
@@ -43,30 +51,45 @@ async function clearQueriesTable(supabaseClient) {
     .not('id', 'is', null);
 }
 
-async function getQueryData(supabaseClient) {
-  const { data, error } = await supabaseClient
-    .storage
-    .from('resources')
-    .download('members.tsv');
+async function parseBlobToDocuments(blob: Blob) {
+  // Convert the blob to a Deno stream
+  const stream = readerFromStreamReader(blob.stream().getReader());
 
-  const tsvText = await data.text();
-  const json = tsv2json(tsvText);
+  // Create Sets to store all members and parents
+  const members = new Set();
+  const parents = new Set();
 
-  const formatted = json.map(item => {
-    return { 
-      query: item[0],
-      metadata: JSON.parse(item[1])
-    };
-  });
+  // Create a Map to keep track of levels
+  const levels = new Map();
+  const aliases = new Map();
 
-  return formatted;
-}
+  // Use the readLines utility from the standard library to read the CSV data as lines
+  for await (const { Dimension: dimension, Member: member, Alias: memberAlias, Parent: parent } of readCSVObjects(stream)) {
+    // Add the member and parent to the respective Sets
+    members.add(member);
+    parents.add(parent);
 
-async function getOpenAIEmbedding(openAI, input) {
-  const embeddingsResponse = await openAI.createEmbeddings({
-    model: 'text-embedding-ada-002',
-    input
-  });
+    const alias =
+      memberAlias !== "" && memberAlias !== member
+        ? `${memberAlias} (${member})`
+        : member;
+    aliases.set(member, { alias, dimension });
 
-  return embeddingsResponse.data[0].embedding;
+    // Determine the level of the member based on its parent
+    // If the parent doesn't exist or it's an empty string, this is a level 1 (root) member
+    if (!parent || parent === "") {
+      levels.set(member, 1);
+    } else {
+      // The member's level is one more than its parent's level
+      const parentLevel = levels.get(parent);
+      levels.set(member, parentLevel + 1);
+    }
+  }
+
+  const documents = [];
+  for (const [member, { alias, dimension }] of aliases) {
+    documents.push(new Document({ pageContent: alias, metadata: { level: levels.get(member), member, dimension } }));
+  }
+
+  return documents;
 }
