@@ -10,7 +10,7 @@ export const dynamic = 'force-dynamic'
 
 export async function POST(request: NextRequest) {
     const { query } = await request.json();
-    
+
     // Create a Supabase client configured to use cookies
     const supabase = createRouteHandlerClient({ cookies })
 
@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
         ...similarity,
-        ...classification, 
+        classification,
         entities
     });
 }
