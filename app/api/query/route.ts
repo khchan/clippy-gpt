@@ -1,9 +1,10 @@
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
 import { cookies } from 'next/headers'
 import { NextRequest, NextResponse } from 'next/server'
-import { extractSimilarity } from './contextExtraction';
+import { extractSimilarityContext } from './contextExtraction';
 import { extractClassification } from './queryClassifier';
 import { extractEntities } from './entityExtraction';
+import rollup from './rollup';
 
 // without this, nextjs renders this route as static HTML for some reason ffs
 export const dynamic = 'force-dynamic'
@@ -14,13 +15,15 @@ export async function POST(request: NextRequest) {
     // Create a Supabase client configured to use cookies
     const supabase = createRouteHandlerClient({ cookies })
 
-    const similarity = await extractSimilarity(query, supabase);
-    const classification = await extractClassification(query);
-    const entities = await extractEntities(query);
+    const similarity = await extractSimilarityContext(query, supabase);
+    // const classification = await extractClassification(query);
+    // const entities = await extractEntities(query);
+    const rollupResult = await rollup(similarity);
 
     return NextResponse.json({
         ...similarity,
-        classification,
-        entities
+        ...rollupResult
+        // classification,
+        // entities
     });
 }

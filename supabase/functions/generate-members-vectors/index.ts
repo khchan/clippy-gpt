@@ -33,7 +33,7 @@ serve(async (_req) => {
   await SupabaseVectorStore.fromDocuments(documents, embeddings, {
     client,
     tableName: "member_lvl_dim",
-    queryName: "match_members",
+    queryName: "member_lvl_match_queries",
   });
 
   return new Response(

@@ -6,9 +6,9 @@ export type ModelSummary = {
     count: number
 }
 
-export type SimilaritySearchResponse = {
-    dimensionality: SimilarityResult[],
-    members: SimilarityResult[]
+export type ModelContext = {
+    // map of dimension name to member metadata
+    dimensionality: Record<string, MemberMetadata[]>
 }
 
 export type SimilarityResult = {
@@ -17,7 +17,17 @@ export type SimilarityResult = {
     score: number
 }
 
+export type RollupResult = {
+    rollupResult: object[]
+}
+
 export type ChatMessage = {
     role: Role
     content: string
+}
+
+export type MemberMetadata = {
+    level: number,
+    member: string,
+    dimension: string
 }
