@@ -5,7 +5,7 @@ import type { FunctionParameters } from "langchain/output_parsers";
 const schema: FunctionParameters = {
     type: "object",
     "properties": {
-        "classification": {
+        "analysis": {
             "type": "string",
             "enum": [
                 "Sales Analysis", 
@@ -15,9 +15,17 @@ const schema: FunctionParameters = {
                 "Budget and Performance Analysis"
             ],
             "description": "This property classifies the type of financial analysis being conducted. 'Sales Analysis' focuses on understanding the revenue streams, their drivers, and patterns over time, across different entities and locations. 'Expense Analysis' deals with the understanding and tracking of business expenditures, identifying major areas of spending, and monitoring the changes over time. 'Cost and Procurement Analysis' aims to evaluate the costs directly related to the production or procurement of goods and services, their changes over time, and their impact on the business. 'Financial Health and Profitability Analysis' assesses the overall financial status of the business, including liquidity, solvency, profitability, and operational efficiency. 'Budget and Performance Analysis' evaluates the business's financial performance against its set targets and budget, identifying areas of over or underperformance."
+        },
+        "intent": {
+            "type": "string",
+            "enum": [
+                "text",
+                "visual"
+            ],
+            "description": "Describes the desired format of the answer given the intent of some user query."
         }
     },
-    "required": ["classification"]
+    "required": ["analysis", "intent"]
 };
 
 export async function extractClassification(query: string) {
@@ -33,6 +41,6 @@ export async function extractClassification(query: string) {
         return await chain.run(query);
     } catch (err) {
         console.error(err);
-        return {"classification": "N/A"};
+        return {"analysis": "N/A", "intent": "N/A"};
     }
 }

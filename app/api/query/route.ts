@@ -16,14 +16,14 @@ export async function POST(request: NextRequest) {
     const supabase = createRouteHandlerClient({ cookies })
 
     const context = await extractSimilarityContext(query, supabase);
-    // const classification = await extractClassification(query);
+    const classification = await extractClassification(query);
     // const entities = await extractEntities(query, context);
     const rollupResult = await rollup(context);
 
     return NextResponse.json({
         ...context,
         ...rollupResult,
-        // classification,
+        classification,
         // entities
     });
 }
