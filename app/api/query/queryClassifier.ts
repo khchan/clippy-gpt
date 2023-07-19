@@ -21,7 +21,11 @@ const schema: FunctionParameters = {
 };
 
 export async function extractClassification(query: string) {
-    const chatModel = new ChatOpenAI({ modelName: "gpt-4-0613", temperature: 0 });
+    const chatModel = new ChatOpenAI({ 
+        modelName: "gpt-4-0613", 
+        temperature: 0, 
+        openAIApiKey: process.env.OPEN_AI_API_KEY
+    });
 
     const chain = createTaggingChain(schema, chatModel);
     

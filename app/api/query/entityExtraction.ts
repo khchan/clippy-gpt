@@ -1,21 +1,30 @@
-import { z } from "zod";
+import { ModelContext } from "@/app/types";
+import { createExtractionChain } from "langchain/chains";
 import { ChatOpenAI } from "langchain/chat_models/openai";
-import { createExtractionChainFromZod } from "langchain/chains";
+import { FunctionParameters } from "langchain/output_parsers";
 
-export async function extractEntities(query: string) {
-
-    const zodSchema = z.object({
-        "temporal-property": z.string().optional(),
-        "financial-concept": z.string().optional(),
-        "analysis-type": z.string().optional()
-    });
+export async function extractEntities(query: string, context: ModelContext) {
+    const dimensions = Object.keys(context.dimensionality);
 
     const chatModel = new ChatOpenAI({
         modelName: "gpt-3.5-turbo-0613",
         temperature: 0,
+        openAIApiKey: process.env.OPEN_AI_API_KEY
     });
 
-    const chain = createExtractionChainFromZod(zodSchema, chatModel);
+    const schema: FunctionParameters = {
+        type: "object",
+        properties: dimensions.reduce((acc, dim) => {
+            acc[dim] = {
+                type: "string",
+                description: `Refers to the ${dim} dimension in an OLAP cube or financial data model.`
+            }
+            return acc;
+        }, {} as Record<string, { type: string, description: string }>),
+        required: dimensions
+    };
+
+    const chain = createExtractionChain(schema, chatModel);
 
     try {
         return await chain.run(query);
