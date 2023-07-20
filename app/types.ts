@@ -6,10 +6,35 @@ export type ModelSummary = {
     count: number
 }
 
-export type ModelContext = {
-    // map of dimension name to member metadata
-    dimensionality: Record<string, MemberMetadata[]>
+export class ModelContext {
+    private context: Record<string, MemberMetadata[]>;
+
+    constructor(context: Record<string, MemberMetadata[]> = {}) {
+        this.context = context;
+    }
+
+    merge(other: ModelContext): void {
+        for (const key in other.context) {
+            if (this.context[key]) {
+                // Assuming that uniqueness is based on 'member' and 'dimension'
+                const existingMembers = new Set(this.context[key].map(member => member.member + member.dimension));
+                this.context[key] = [
+                    ...this.context[key], 
+                    ...other.context[key].filter(member => !existingMembers.has(member.member + member.dimension))];
+            } else {
+                this.context[key] = other.context[key];
+            }
+        }
+    }
+
+    get(): Record<string, MemberMetadata[]> {
+        return this.context;
+    }
 }
+
+export type ClassificationResult = {analysis: string, intent: string};
+
+export type EntityExtractResult = Record<string, string[]>;
 
 export type SimilarityResult = {
     pageContent: string,

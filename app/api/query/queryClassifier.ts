@@ -1,3 +1,4 @@
+import { ClassificationResult } from "@/app/types";
 import { createTaggingChain } from "langchain/chains";
 import { ChatOpenAI } from "langchain/chat_models/openai";
 import type { FunctionParameters } from "langchain/output_parsers";
@@ -28,7 +29,7 @@ const schema: FunctionParameters = {
     "required": ["analysis", "intent"]
 };
 
-export async function extractClassification(query: string) {
+export async function extractClassification(query: string): Promise<ClassificationResult> {
     const chatModel = new ChatOpenAI({ 
         modelName: "gpt-4-0613", 
         temperature: 0, 
@@ -38,9 +39,9 @@ export async function extractClassification(query: string) {
     const chain = createTaggingChain(schema, chatModel);
     
     try {
-        return await chain.run(query);
+        return await chain.run(query) as unknown as ClassificationResult;
     } catch (err) {
         console.error(err);
-        return {"analysis": "N/A", "intent": "N/A"};
+        return {analysis: "N/A", intent: "text"};
     }
 }
