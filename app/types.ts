@@ -56,3 +56,9 @@ export type MemberMetadata = {
     member: string,
     dimension: string
 }
+
+export type TableDetails = {
+    tableName: string,
+    shortName: string,
+    foreignKeyColumn: string
+}

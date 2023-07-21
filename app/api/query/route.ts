@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
         classification
     };
 
-    // const rollupResult = await rollup(context);
+    const rollupResult = await rollup(memberContext);
 
     return NextResponse.json(response);
 }
