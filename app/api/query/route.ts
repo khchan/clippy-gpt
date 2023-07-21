@@ -29,6 +29,7 @@ export async function POST(request: NextRequest) {
     };
 
     const rollupResult = await rollup(memberContext);
+    console.log(rollupResult);
 
     return NextResponse.json(response);
 }

@@ -52,6 +52,6 @@ function createConditionFromParams(shortName: string, columnName: string, member
 function createResultingQuery(selects: string[], joins: string[], conditions: string[]): string {
     return `select ${selects.join(", ")}, SUM(values) as rollupValues
             from modelvalues as MV ${joins.join(" ")}
-            where ${conditions.join(" and ")}
+            where ${conditions.join(" or ")}
             group by ${selects.join(", ")} `;
 }
