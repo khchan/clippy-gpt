@@ -6,30 +6,34 @@ import { extractClassification } from './queryClassifier';
 import { extractEntities } from './entityExtraction';
 import rollup from './rollup';
 import { extractMemberDimensionality } from './memberSimilarity';
+import GenerateResults from './graphGenerator';
+import { RollupResult } from '@/app/types';
 
 // without this, nextjs renders this route as static HTML for some reason ffs
 export const dynamic = 'force-dynamic'
 
 export async function POST(request: NextRequest) {
-    const { query } = await request.json();
+    // const { query } = await request.json();
 
-    // Create a Supabase client configured to use cookies
-    const supabase = createRouteHandlerClient({ cookies })
+    // // Create a Supabase client configured to use cookies
+    // const supabase = createRouteHandlerClient({ cookies })
 
-    const dimensions = await extractDimensionality(query, supabase);
-    const memberContext = await extractMemberDimensionality(query, dimensions, supabase);
-    const classification = await extractClassification(query);
-    const entityContext = await extractEntities(query, dimensions, supabase);
+    // const dimensions = await extractDimensionality(query, supabase);
+    // const memberContext = await extractMemberDimensionality(query, dimensions, supabase);
+    // const classification = await extractClassification(query);
+    // const entityContext = await extractEntities(query, dimensions, supabase);
 
-    memberContext.merge(entityContext);
+    // memberContext.merge(entityContext);
 
-    const response = {
-        dimensionality: memberContext.get(),
-        classification
-    };
+    // const response = {
+    //     dimensionality: memberContext.get(),
+    //     classification
+    // };
 
-    const rollupResult = await rollup(memberContext);
-    console.log(rollupResult);
+    // const rollupResult = await rollup(memberContext);
+    const messageResult = await GenerateResults(null as unknown as RollupResult);
 
-    return NextResponse.json(response);
+    // console.log(rollupResult);
+
+    return NextResponse.json(messageResult);
 }

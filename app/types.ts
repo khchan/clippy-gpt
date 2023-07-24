@@ -1,3 +1,4 @@
+import { StaticImageData } from "next/dist/shared/lib/image-external";
 
 export enum Role { System, User }
 
@@ -48,8 +49,10 @@ export type RollupResult = {
 
 export type ChatMessage = {
     role: Role
-    content: string
+    textContent?: string
+    imageContentURI?: string
 }
+
 
 export type MemberMetadata = {
     level: number,
