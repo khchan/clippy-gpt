@@ -5,12 +5,15 @@ import Banner from "@/components/Banner";
 import ChatInputFooter from "@/components/ChatInputFooter";
 import { ChatMessage, ModelSummary, Role } from "./types";
 import MessageList from "@/components/MessageList";
+import TestGraph from "@/app/graph-output.png"
+import Image from "next/image";
 
 export default function Index() {
   const [query, setQuery] = useState<string>("");
   const [awaitingResponse, setAwaitingResponse] = useState<boolean>(true);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
 
+  
   useEffect(() => {
     fetch("/api/model")
       .then((res) => res.json())
@@ -18,7 +21,7 @@ export default function Index() {
         const message = `Here's some stats about the loaded model:\n${model.map(m => {
           return `${m.table} (${m.count})`;
         }).join(", ")}`
-        setMessages([...messages, {content: message, role: Role.System}]);
+        setMessages([...messages, {textContent: message, role: Role.System}, ]);
         setAwaitingResponse(false);
       });
   }, []);
@@ -26,7 +29,7 @@ export default function Index() {
   const submitQuestion = (event: FormEvent) => {
     event.preventDefault();
     // add user message
-    const updatedMessages = [...messages, {content: query, role: Role.User}]
+    const updatedMessages = [...messages, {textContent: query, role: Role.User}]
     setMessages(updatedMessages);
     setAwaitingResponse(true);
     fetch("/api/query", {
@@ -40,12 +43,12 @@ export default function Index() {
       .then((res) => {
         setQuery("");
         // add system response message
-        setMessages([...updatedMessages, {content: JSON.stringify(res), role: Role.System}]);
+        setMessages([...updatedMessages, {...res, role: Role.System}]);
         setAwaitingResponse(false);
       })
       .catch((err) => {
         console.error(err);
-        setMessages([...updatedMessages, {content: "An error occurred, please try again later!", role: Role.System}]);
+        setMessages([...updatedMessages, {textContent: "An error occurred, please try again later!", role: Role.System}]);
         setAwaitingResponse(false);
       });
   };
