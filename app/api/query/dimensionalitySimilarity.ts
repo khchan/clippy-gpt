@@ -4,6 +4,14 @@ import { SupabaseVectorStore } from "langchain/vectorstores/supabase";
 
 export async function extractDimensionality(query: string, client: SupabaseClient): Promise<Set<string>> {
     const embeddings = new OpenAIEmbeddings({ openAIApiKey: process.env.OPEN_AI_API_KEY });
+    // const embeddings = new OpenAIEmbeddings({
+    //     azureOpenAIApiKey: process.env.AZURE_OPENAI_API_KEY,
+    //     azureOpenAIApiInstanceName: process.env.AZURE_OPENAI_API_INSTANCE_NAME,
+    //     azureOpenAIApiDeploymentName: process.env.AZURE_OPENAI_API_DEPLOYMENT_NAME,
+    //     azureOpenAIApiVersion: process.env.AZURE_OPENAI_API_VERSION,
+    //     azureOpenAIBasePath: process.env.AZURE_OPENAI_BASE_PATH
+    // });
+    
     const dimensionalityStore = await SupabaseVectorStore.fromExistingIndex(
         embeddings,
         {
