@@ -1,5 +1,5 @@
 import sql from './db';
-import {MemberMetadata, ModelContext, RollupResult, TableDetails} from "@/app/types";
+import {ModelContext, RollupResult} from "@/app/types";
 import {TABLE_PER_DIM} from "@/app/api/query/constants";
 
 export default async function rollup(context: ModelContext): Promise<RollupResult> {
@@ -34,7 +34,9 @@ export default async function rollup(context: ModelContext): Promise<RollupResul
     console.log(finalQuery);
 
     const rollupResult = await sql`${sql.unsafe(finalQuery)}`;
-    return {rollupResult};
+
+    console.log(rollupResult);
+    return {columns: rollupResult["columns"], rows: rollupResult};
 }
 
 function createJoinFromParams(tableName: string, shortName: string, fk: string): string {
@@ -52,6 +54,6 @@ function createConditionFromParams(shortName: string, columnName: string, member
 function createResultingQuery(selects: string[], joins: string[], conditions: string[]): string {
     return `select ${selects.join(", ")}, SUM(values) as rollupValues
             from modelvalues as MV ${joins.join(" ")}
-            where ${conditions.join(" or ")}
+            where ${conditions.join(" and ")}
             group by ${selects.join(", ")} `;
 }

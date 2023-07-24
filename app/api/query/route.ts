@@ -6,6 +6,7 @@ import { extractClassification } from './queryClassifier';
 import { extractEntities } from './entityExtraction';
 import rollup from './rollup';
 import { extractMemberDimensionality } from './memberSimilarity';
+import getCompletion from "./prompt";
 
 // without this, nextjs renders this route as static HTML for some reason ffs
 export const dynamic = 'force-dynamic'
@@ -29,7 +30,7 @@ export async function POST(request: NextRequest) {
     };
 
     const rollupResult = await rollup(memberContext);
-    console.log(rollupResult);
+    const completion = await getCompletion(query, rollupResult);
 
-    return NextResponse.json(response);
+    return NextResponse.json(completion);
 }

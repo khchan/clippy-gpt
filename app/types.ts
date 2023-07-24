@@ -42,8 +42,13 @@ export type SimilarityResult = {
     score: number
 }
 
+export type Column = {
+    name: string
+}
+
 export type RollupResult = {
-    rollupResult: object[]
+    columns: Column[]
+    rows: object[]
 }
 
 export type ChatMessage = {
