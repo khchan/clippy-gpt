@@ -16,7 +16,7 @@ export default function Message(props: MessageProps) {
     <div
       className={`${
         isUserMessage ? "place-self-end text-right" : "place-self-start text-left"
-      } space-y-2`}
+      } space-y-2 whitespace-pre-line`}
     >
       <div className={messageClassName}>
         {message.content}

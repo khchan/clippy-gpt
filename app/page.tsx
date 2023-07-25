@@ -44,7 +44,7 @@ export default function Index() {
       .then((res) => {
         setQuery("");
         // add system response message
-        setMessages([...updatedMessages, {content: JSON.stringify(res), role: Role.System}]);
+        setMessages([...updatedMessages, {content: res, role: Role.System}]);
         setAwaitingResponse(false);
       })
       .catch((err) => {

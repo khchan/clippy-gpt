@@ -30,5 +30,6 @@ export default async function getCompletion(query: string, rollupResult: RollupR
     const result = await model.call(formattedPrompt);
     console.log(result);
 
-    return result.slice(2, result.length - 1);
+    // Skip past the 2 newlines that are always at the beginning
+    return result.slice(2);
 }
