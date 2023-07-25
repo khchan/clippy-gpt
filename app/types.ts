@@ -65,5 +65,6 @@ export type MemberMetadata = {
 export type TableDetails = {
     tableName: string,
     shortName: string,
-    foreignKeyColumn: string
+    foreignKeyColumn: string,
+    description: string
 }

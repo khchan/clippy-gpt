@@ -4,6 +4,7 @@ import { SupabaseClient } from '@supabase/auth-helpers-nextjs'
 import { ChatOpenAI } from "langchain/chat_models/openai";
 import { FunctionParameters } from "langchain/output_parsers";
 import { extractMemberDimensionality } from "./memberSimilarity";
+import { TABLE_PER_DIM } from "./constants";
 
 export async function extractEntities(query: string, dimensions: Set<string>, client: SupabaseClient): Promise<ModelContext> {
     const chatModel = new ChatOpenAI({
@@ -18,7 +19,7 @@ export async function extractEntities(query: string, dimensions: Set<string>, cl
         properties: dimensionsArray.reduce((acc, dim) => {
             acc[dim] = {
                 type: "string",
-                description: `Refers to the ${dim} dimension in an OLAP cube or financial data model.` // TODO: write a better description
+                description: TABLE_PER_DIM[dim].description
             }
             return acc;
         }, {} as Record<string, { type: string, description: string }>),
