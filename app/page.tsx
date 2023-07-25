@@ -23,6 +23,10 @@ export default function Index() {
       });
   }, []);
 
+  useEffect(() => {
+    fetch("/api/python/visualize").then((res) => res.json()).then(console.log);
+  }, []);
+
   const submitQuestion = (event: FormEvent) => {
     event.preventDefault();
     // add user message

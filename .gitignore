@@ -43,3 +43,6 @@ supabase/.temp
 **/supabase/.branches
 **/supabase/.temp
 node_modules
+
+# Python
+api/python/__pycache__
