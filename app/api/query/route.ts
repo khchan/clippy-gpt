@@ -4,8 +4,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { extractDimensionality } from './dimensionalitySimilarity';
 import { extractClassification } from './queryClassifier';
 import { extractEntities } from './entityExtraction';
-import { findEntities } from './entityRecognition';
-import rollup from './rollup';
+import rollup from './rollupQuery';
 import { extractMemberDimensionality } from './memberSimilarity';
 import getCompletion from "./prompt";
 
