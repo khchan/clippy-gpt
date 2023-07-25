@@ -45,8 +45,4 @@ supabase/.temp
 node_modules
 
 # Python
-<<<<<<< HEAD
 api/python/__pycache__
-=======
-api/python/__pycache__
->>>>>>> 32d2dbf (add alternate rollup query)
