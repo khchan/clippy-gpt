@@ -42,3 +42,38 @@ export async function extractMemberDimensionality(query: string, dimensions: Set
 
     return new ModelContext(context);
 }
+
+export async function extractSingleMemberDimensionality(query: string, client: SupabaseClient): Promise<ModelContext> {
+    const embeddings = new OpenAIEmbeddings({ openAIApiKey: process.env.OPEN_AI_API_KEY });
+
+    const memberStore = await SupabaseVectorStore.fromExistingIndex(
+        embeddings,
+        {
+            client,
+            tableName: "member_lvl_dim",
+            queryName: "member_lvl_match_queries",
+        }
+    );
+
+    // Only want a single match in this scenario.
+    const memberResponse = await memberStore.similaritySearchWithScore(query, 1);
+    const members = memberResponse
+        .map(([document, score]) => {
+            console.log(`Matched member: "${document.pageContent}" with score: ${score}`);
+            return { ...document, score };
+        })
+        .reduce((acc, next) => {
+            const metadata = next.metadata as MemberMetadata;
+            // (acc[metadata.dimension] = acc[metadata.dimension] || []).push(metadata);
+
+            if (!acc[metadata.dimension] || acc[metadata.level] > acc[metadata.level]) {
+                acc[metadata.dimension] = [metadata];
+            } else if (acc[metadata.level] === acc[metadata.level]) {
+                acc[metadata.dimension].push(metadata);
+            }
+
+            return acc;
+        }, {} as Record<string, MemberMetadata[]>);
+    
+    return new ModelContext(members);
+}

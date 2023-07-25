@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { extractDimensionality } from './dimensionalitySimilarity';
 import { extractClassification } from './queryClassifier';
 import { extractEntities } from './entityExtraction';
+import { findEntities } from './entityRecognition';
 import rollup from './rollup';
 import { extractMemberDimensionality } from './memberSimilarity';
 import getCompletion from "./prompt";
@@ -23,6 +24,8 @@ export async function POST(request: NextRequest) {
     const entityContext = await extractEntities(query, dimensions, supabase);
 
     memberContext.merge(entityContext);
+
+    const betterMemberContext = await findEntities(query, supabase);
 
     const response = {
         dimensionality: memberContext.get(),
