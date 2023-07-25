@@ -1,7 +1,9 @@
 {
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "fastapi-dev": "pip3 install -r requirements.txt && python3 -m uvicorn api.python.index:app --reload",
+    "next-dev": "next dev",
+    "dev": "concurrently \"npm run next-dev\" \"npm run fastapi-dev\"",
     "build": "next build",
     "start": "next start"
   },
@@ -10,6 +12,7 @@
     "@supabase/auth-helpers-nextjs": "latest",
     "@supabase/supabase-js": "latest",
     "autoprefixer": "10.4.14",
+    "concurrently": "^8.2.0",
     "dotenv-flow": "^3.2.0",
     "langchain": "^0.0.108",
     "next": "latest",
