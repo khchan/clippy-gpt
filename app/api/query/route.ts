@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
     memberContext.merge(entityContext);
     // console.log("-- merged context:", JSON.stringify(memberContext));
 
-    const betterMemberContext = await findEntities(query, supabase);
+    // const betterMemberContext = await findEntities(query, supabase);
     // console.log("-- betterMemberContext:", JSON.stringify(betterMemberContext));
 
     const response = {
