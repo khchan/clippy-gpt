@@ -7,6 +7,7 @@ import { extractEntities } from './entityExtraction';
 import rollup from './rollupQuery';
 import { extractMemberDimensionality } from './memberSimilarity';
 import getCompletion from "./prompt";
+import getGraphPythonScript from "./graph";
 
 // without this, nextjs renders this route as static HTML for some reason ffs
 export const dynamic = 'force-dynamic'
@@ -31,6 +32,8 @@ export async function POST(request: NextRequest) {
 
     const rollupResult = await rollup(memberContext);
     const completion = await getCompletion(query, rollupResult);
+
+    const pythonScriptPath = await getGraphPythonScript(query, rollupResult);
 
     return NextResponse.json(completion);
 }
