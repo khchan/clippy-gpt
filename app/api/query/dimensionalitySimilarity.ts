@@ -21,7 +21,7 @@ export async function extractDimensionality(query: string, client: SupabaseClien
         }
     );
 
-    const dimensionalityResponse = await dimensionalityStore.similaritySearchWithScore(query);
+    const dimensionalityResponse = await dimensionalityStore.similaritySearchWithScore(query, 1);
     const dimensions = new Set(dimensionalityResponse.flatMap(([doc, score]) => {
         console.log(`Matched query: "${doc.pageContent}" with score: ${score}`);
         return doc.metadata.dimensions as string[];

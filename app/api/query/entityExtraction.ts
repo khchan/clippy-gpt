@@ -46,11 +46,15 @@ export async function extractEntities(query: string, dimensions: Set<string>, cl
         }, {} as EntityExtractResult);
 
         const output = new ModelContext();
-
+        const promises = [];
         for (const key in grouped) {
             for (const value of grouped[key]) {
-                output.merge(await extractMemberDimensionality(value, dimensions, client));
+                promises.push(extractMemberDimensionality(value, dimensions, client, 1));
             }
+        }
+
+        for (const ctx of await Promise.all(promises)) {
+            output.merge(ctx);
         }
 
         return output;

@@ -1,35 +1,37 @@
-import {RollupResult} from "@/app/types";
-import {PromptTemplate} from "langchain/prompts";
-import {OpenAI} from "langchain/llms/openai";
+import { RollupResult } from "@/app/types";
+import { LLMChain } from "langchain/chains";
+import { ChatOpenAI } from "langchain/chat_models/openai";
+import { PromptTemplate } from "langchain/prompts";
 
+const prompt = PromptTemplate.fromTemplate(`Given this table of data:
+{columns}
+{rows}
 
-const prompt = PromptTemplate.fromTemplate(`Given table with columns
-            {columns}
-            and rows 
-            {rows}.
-            Assume that rollupValues in table is numeric.In 100 words or less calculate the answer on the question {question}
-            and do not expose any details about table or its structure`);
+Assume that rollupvalues column in the table is numeric and do not expose any details about table or its structure.
+Try to calculate as much as you can to return sources and numbers in your answer and keep your answer under 100 words.
+
+Question: {question}
+Answer: `);
 
 export default async function getCompletion(query: string, rollupResult: RollupResult): Promise<string> {
     const columns = rollupResult.columns.map((column) => column.name);
-    const rows: string[] = rollupResult.rows.map((row: Record<string, any>) => {
-        let rowWithValues = columns.map((header) => `${row[header]}`).join(", ");
-        return rowWithValues + "\n";
-    });
+    const rows = rollupResult.rows
+        .map((row: Record<string, any>) => columns.map((header) => `${row[header]}`).join(","))
+        .join("\n");
 
-    const formattedPrompt = await prompt.format({
+    const model = new ChatOpenAI({
+        modelName: 'gpt-4-0613',
+        temperature: 0, 
+        openAIApiKey: process.env.OPEN_AI_API_KEY
+    });
+    const chain = new LLMChain({ llm: model, prompt });
+    const result = await chain.call({
         columns: columns,
         rows: rows,
         question: query
     });
 
-    console.log(formattedPrompt);
+    // console.log(result);
 
-    const model = new OpenAI({temperature: 1, openAIApiKey: process.env.OPEN_AI_API_KEY});
-
-    const result = await model.call(formattedPrompt);
-    console.log(result);
-
-    // Skip past the 2 newlines that are always at the beginning
-    return result.slice(2);
+    return result.text;
 }
