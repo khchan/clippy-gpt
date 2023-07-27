@@ -1,6 +1,7 @@
 query,dimensions
 What were my sales in 2022 compared to 2021?,"Account,Year"
 What product drove my sales growth in 2022 compared to 2021?,"Account,Product,Year"
+What seasonality patterns should I consider when forecasting revenue?,"Account,Year,Period,Product"
 Did my sales show any seasonality?,"Account,Year,Period,Product"
 Which product caused the most expense in 2022 compared to 2021?,"Account,Product,Year"
 Which product had the highest expense in 2022 compared to 2021?,"Account,Product,Year"

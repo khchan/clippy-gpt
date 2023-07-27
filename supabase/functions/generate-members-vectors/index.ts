@@ -91,5 +91,39 @@ async function parseBlobToDocuments(blob: Blob) {
     documents.push(new Document({ pageContent: alias, metadata: { level: levels.get(member), member, dimension } }));
   }
 
+  // extra cheese
+  documents.push(new Document({ 
+    pageContent: "seasonality patterns (All Products)",
+    metadata: {
+      level: 1,
+      member: "All Products",
+      dimension: "Product"
+    }
+  }));
+  documents.push(new Document({ 
+    pageContent: "seasonality patterns (All Years)",
+    metadata: {
+      level: 1,
+      member: "All Years",
+      dimension: "Year"
+    }
+  }))
+  documents.push(new Document({ 
+    pageContent: "seasonality patterns (Full Year)",
+    metadata: {
+      level: 1,
+      member: "Full Year",
+      dimension: "Period"
+    }
+  }))
+  documents.push(new Document({ 
+    pageContent: "seasonality patterns (Revenue)",
+    metadata: {
+      level: 2,
+      member: "Revenue",
+      dimension: "Account"
+    }
+  }))
+
   return documents;
 }
