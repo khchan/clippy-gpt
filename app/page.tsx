@@ -33,7 +33,14 @@ export default function Index() {
       },
       })
     .then((res) => res.json())
-    .then((res) => res);
+    .then((res) => {
+      // TODO: this should just return the rollup CSV path for the other API calls
+      //return res;
+
+      // But for now this is still just getting the actual completion, 
+      // so just set it so things keep kinda working.
+      setMessages(messages => ([...messages, {textContent: res, role: Role.System}]));
+    });
   }
 
   const getCompletion = async function(rollupPath: String) {
@@ -73,10 +80,11 @@ export default function Index() {
     
     getRollups(query)
       .then((rollupPath) => {
-        return Promise.all([
-          getCompletion(rollupPath),
-          getGraph(rollupPath),
-        ]);
+        // TODO: put this back in
+        // return Promise.all([
+        //   getCompletion(rollupPath),
+        //   getGraph(rollupPath),
+        // ]);
       })
       .then(() => {
         setQuery("");
