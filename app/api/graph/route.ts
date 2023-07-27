@@ -5,5 +5,5 @@ export const dynamic = 'force-dynamic'
 
 export async function POST(request: NextRequest) {
     const { rollupPath } = await request.json();
-    return NextResponse.json({ graphUrl: "graphUrl"});
+    return NextResponse.json({ graphUrl: "https://shorturl.at/cmTVW"});
 }

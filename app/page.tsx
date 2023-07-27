@@ -18,12 +18,13 @@ export default function Index() {
         const message = `Here's some stats about the loaded model:\n${model.map(m => {
           return `${m.table} (${m.count})`;
         }).join(", ")}`
-        setMessages([...messages, {content: message, role: Role.System}]);
+        setMessages([...messages, {textContent: message, role: Role.System}]);
         setAwaitingResponse(false);
       });
   }, []);
 
   const getRollups = async function(query: String) {
+    // TODO: call new rollups endpoint
     return fetch("/api/query", {
       method: "POST",
       body: JSON.stringify({ query }),
@@ -32,7 +33,7 @@ export default function Index() {
       },
       })
     .then((res) => res.json())
-    .then((res) => res.rollupPath );
+    .then((res) => res);
   }
 
   const getCompletion = async function(rollupPath: String) {
@@ -44,12 +45,13 @@ export default function Index() {
       },
     })
     .then((res) => res.json())
-    .then(res => {
-      setMessages(messages => ([...messages, {content: res.completion, role: Role.System}]));
+    .then((res) => {
+      setMessages(messages => ([...messages, {textContent: res.completion, role: Role.System}]));
     });
   }
 
   const getGraph = async function(rollupPath: String) {
+    // TODO: replace this with call to vercel python endpoint
     return fetch("/api/graph", {
       method: "POST",
       body: JSON.stringify({ rollupPath }),
@@ -58,15 +60,15 @@ export default function Index() {
       },
     })
     .then((res) => res.json())
-    .then(res => {
-      setMessages(messages => ([...messages, {content: res.graphUrl, role: Role.System}]));
+    .then((res) => {
+      setMessages(messages => ([...messages, {imageContentURI: res.graphUrl, role: Role.System}]));
     });
   }
 
   const submitQuestion = (event: FormEvent) => {
     event.preventDefault();
     // add user message
-    setMessages(messages => ([...messages, {content: query, role: Role.User}]));
+    setMessages(messages => ([...messages, {textContent: query, role: Role.User}]));
     setAwaitingResponse(true);
     
     getRollups(query)
@@ -82,7 +84,7 @@ export default function Index() {
       })
       .catch((err) => {
         console.error(err);
-        setMessages(messages => ([...messages, {content: "An error occurred, please try again later!", role: Role.System}]));
+        setMessages(messages => ([...messages, {textContent: "An error occurred, please try again later!", role: Role.System}]));
         setAwaitingResponse(false);
       });
   };
