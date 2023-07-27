@@ -80,11 +80,11 @@ export default function Index() {
     
     getRollups(query)
       .then((rollupPath) => {
-        // TODO: put this back in
-        // return Promise.all([
-        //   getCompletion(rollupPath),
-        //   getGraph(rollupPath),
-        // ]);
+        return Promise.all([
+          // TODO: put this back in
+          // getCompletion(rollupPath),
+          getGraph("rollupPath"),
+        ]);
       })
       .then(() => {
         setQuery("");
