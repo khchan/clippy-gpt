@@ -24,14 +24,7 @@ export async function extractMemberDimensionality(query: string, dimensions: Set
         .filter(({ metadata }) => dimensions.has(metadata.dimension))
         .reduce((acc, next) => {
             const metadata = next.metadata as MemberMetadata;
-            // (acc[metadata.dimension] = acc[metadata.dimension] || []).push(metadata);
-
-            if (!acc[metadata.dimension] || acc[metadata.level] > acc[metadata.level]) {
-                acc[metadata.dimension] = [metadata];
-            } else if (acc[metadata.level] === acc[metadata.level]) {
-                acc[metadata.dimension].push(metadata);
-            }
-
+            (acc[metadata.dimension] = acc[metadata.dimension] || []).push(metadata);
             return acc;
         }, {} as Record<string, MemberMetadata[]>);
 

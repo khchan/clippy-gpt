@@ -24,14 +24,14 @@ export default async function getCompletion(query: string, rollupResult: RollupR
         temperature: 1, 
         openAIApiKey: process.env.OPEN_AI_API_KEY
     });
-    const chain = new LLMChain({ llm: model, prompt, verbose: true });
+    const chain = new LLMChain({ llm: model, prompt });
     const result = await chain.call({
         columns: columns,
         rows: rows,
         question: query
     });
 
-    console.log(result);
+    // console.log(result);
 
     return result.text;
 }
