@@ -20,8 +20,8 @@ export default async function getCompletion(query: string, rollupResult: RollupR
         .join("\n");
 
     const model = new ChatOpenAI({
-        modelName: 'gpt-3.5-turbo-16k',
-        temperature: 1, 
+        modelName: 'gpt-4-0613',
+        temperature: 0, 
         openAIApiKey: process.env.OPEN_AI_API_KEY
     });
     const chain = new LLMChain({ llm: model, prompt });

@@ -49,7 +49,7 @@ export async function extractEntities(query: string, dimensions: Set<string>, cl
         const promises = [];
         for (const key in grouped) {
             for (const value of grouped[key]) {
-                promises.push(extractMemberDimensionality(value, dimensions, client));
+                promises.push(extractMemberDimensionality(value, dimensions, client, 1));
             }
         }
 

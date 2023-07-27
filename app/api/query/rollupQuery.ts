@@ -34,5 +34,7 @@ export default async function rollup(context: ModelContext): Promise<RollupResul
 
     const rollupResult = await sql`${sql.unsafe(finalQuery)}`;
 
+    // console.log(rollupResult);
+
     return {columns: rollupResult["columns"], rows: rollupResult};
 }

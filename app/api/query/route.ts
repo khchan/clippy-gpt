@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
     const supabase = createRouteHandlerClient({ cookies })
 
     const dimensions = await extractDimensionality(query, supabase);
-    const memberContext = await extractMemberDimensionality(query, dimensions, supabase);
+    const memberContext = await extractMemberDimensionality(query, dimensions, supabase, 3);
     // console.log("-- memberContext:", JSON.stringify(memberContext));
     // const classification = await extractClassification(query);
     const entityContext = await extractEntities(query, dimensions, supabase);
