@@ -18,6 +18,9 @@ def visualize():
 
   url: str = os.environ.get("NEXT_PUBLIC_SUPABASE_URL")
   key: str = os.environ.get("NEXT_SUPABASE_SERVICE_ROLE_KEY")
+  print(url)
+  print(key)
+  
   supabase: Client = create_client(url, key)
   destination = '/tmp/tmp.csv'
   with open(destination, 'wb+') as f:
