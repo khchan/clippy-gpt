@@ -1,17 +1,11 @@
-from fastapi import FastAPI
-from langchain.chat_models import ChatOpenAI
-from langchain.schema import AIMessage, HumanMessage, SystemMessage
-from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
-
 import os
-
-os.environ["OPENAI_API_KEY"] = "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"
+from fastapi import FastAPI
+from supabase import create_client, Client
 
 app = FastAPI()
 
-
 @app.get("/api/python/visualize")
-def visualize(rollupResultId: str):
+def visualize():
 
     # fetch rollup result from supabase by rollupResultId
     # prepare set of prompts
@@ -22,4 +16,12 @@ def visualize(rollupResultId: str):
 
     # exec(script.content)
 
-    return {"message": "Hello World from Python"}
+  url: str = os.environ.get("NEXT_PUBLIC_SUPABASE_URL")
+  key: str = os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
+  supabase: Client = create_client(url, key)
+  destination = '/tmp/tmp.csv'
+  with open(destination, 'wb+') as f:
+    res = supabase.storage.from_('resources').download('hierarchies.csv')
+    f.write(res)
+
+  return {"message": f'Hello World from Python {os.stat(destination).st_size}'}
