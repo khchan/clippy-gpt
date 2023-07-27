@@ -33,6 +33,7 @@ export default function Index() {
     const updatedMessages = [...messages, {content: query, role: Role.User}]
     setMessages(updatedMessages);
     setAwaitingResponse(true);
+    //TODO UPDATED HERE
     fetch("/api/query", {
       method: "POST",
       body: JSON.stringify({ query }),
@@ -42,11 +43,34 @@ export default function Index() {
     })
       .then((res) => res.json())
       .then((res) => {
+          return Promise.all([
+              fetch("/api/prompt", {
+                  method: "POST",
+                  body: JSON.stringify({ query }),
+                  headers: {
+                      "Content-type": "application/json; charset=UTF-8",
+                  },
+              }).then((res) => res.json())
+                  .then((res) => {
+                      return {content: res, role: Role.System};
+                  }),
+              fetch("/api/python/visualize", {
+                  method: "POST",
+                  body: JSON.stringify({ query }),
+                  headers: {
+                      "Content-type": "application/json; charset=UTF-8",
+                  },
+              }).then((res) => res.json())
+                  .then((res) => {
+                      return {content: res, role: Role.System};
+                  })]
+          )
+      }).then((res) => {
+        //array of updated
+        setMessages([...updatedMessages, ...res]);
         setQuery("");
-        // add system response message
-        setMessages([...updatedMessages, {content: res, role: Role.System}]);
         setAwaitingResponse(false);
-      })
+    })
       .catch((err) => {
         console.error(err);
         setMessages([...updatedMessages, {content: "An error occurred, please try again later!", role: Role.System}]);

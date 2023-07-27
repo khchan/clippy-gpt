@@ -59,7 +59,7 @@ export default async function rollup(context: ModelContext, client: SupabaseClie
     const fileContent = await fs.promises.readFile(dataPath, 'utf-8');
     const { data, error } = await client.storage
         .from('csv_files')
-        .upload('rollupResult.csv', fileContent);
+        .upload('rollupResult.csv', fileContent, {upsert: true});
 
     return data?.path;
 }
