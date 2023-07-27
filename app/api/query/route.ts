@@ -6,7 +6,7 @@ import { extractClassification } from './queryClassifier';
 import { extractEntities } from './entityExtraction';
 import rollup from './rollupQuery';
 import { extractMemberDimensionality } from './memberSimilarity';
-import getCompletion from "./prompt";
+import getCompletion from "../prompt/prompt";
 import getGraphPythonScript from "./graph";
 
 // without this, nextjs renders this route as static HTML for some reason ffs
@@ -30,10 +30,13 @@ export async function POST(request: NextRequest) {
     // const betterMemberContext = await findEntities(query, supabase);
     // console.log("-- betterMemberContext:", JSON.stringify(betterMemberContext));
 
-    const rollupResult = await rollup(memberContext);
-    const completion = await getCompletion(query, rollupResult);
+    const rollupResultId = await rollup(memberContext, supabase);
+
+    //TODO write rollup result into supabase
+    //return id on it
+    // const completion = await getCompletion(query, rollupResult);
 
     // const pythonScriptPath = await getGraphPythonScript(query, rollupResult);
 
-    return NextResponse.json(completion);
+    return NextResponse.json(rollupResultId);
 }

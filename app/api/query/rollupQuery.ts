@@ -1,8 +1,11 @@
 import sql from './db';
 import { ModelContext, RollupResult } from "@/app/types";
 import { TABLE_PER_DIM } from "./constants";
+import fs from "fs";
+import {SupabaseClient} from "@supabase/auth-helpers-nextjs";
+import {createClient} from "@supabase/supabase-js";
 
-export default async function rollup(context: ModelContext): Promise<RollupResult> {
+export default async function rollup(context: ModelContext, client: SupabaseClient) {
     const tableNames = Object.keys(context.get()).map(d => TABLE_PER_DIM[d].tableName);
 
     /*
@@ -34,7 +37,29 @@ export default async function rollup(context: ModelContext): Promise<RollupResul
 
     const rollupResult = await sql`${sql.unsafe(finalQuery)}`;
 
-    // console.log(rollupResult);
+    console.log(rollupResult);
 
-    return {columns: rollupResult["columns"], rows: rollupResult};
+    //part 2 - store to file, TODO check here
+    const columns = rollupResult.columns.map((column) => column.name);
+    const rows = rollupResult
+        .map((row: Record<string, any>) => columns.map((header) => `${row[header]}`).join(","))
+        .join("\n");
+    const dataToStore = `${columns}\n${rows}`;
+
+    const dataPath = "/tmp/data.csv";
+    await fs.writeFile(dataPath, dataToStore, function(err) {
+        if(err) {
+            const b = false;
+            // too bad for us
+        } else {
+
+        }
+    });
+
+    const fileContent = await fs.promises.readFile(dataPath, 'utf-8');
+    const { data, error } = await client.storage
+        .from('csv_files')
+        .upload('rollupResult.csv', fileContent);
+
+    return data?.path;
 }
