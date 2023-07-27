@@ -18,38 +18,81 @@ export default function Index() {
         const message = `Here's some stats about the loaded model:\n${model.map(m => {
           return `${m.table} (${m.count})`;
         }).join(", ")}`
-        setMessages([...messages, {content: message, role: Role.System}]);
+        setMessages([...messages, {textContent: message, role: Role.System}]);
         setAwaitingResponse(false);
       });
   }, []);
 
-  useEffect(() => {
-    fetch("/api/python/visualize").then((res) => res.json()).then(console.log);
-  }, []);
-
-  const submitQuestion = (event: FormEvent) => {
-    event.preventDefault();
-    // add user message
-    const updatedMessages = [...messages, {content: query, role: Role.User}]
-    setMessages(updatedMessages);
-    setAwaitingResponse(true);
-    fetch("/api/query", {
+  const getRollups = async function(query: String) {
+    // TODO: call new rollups endpoint
+    return fetch("/api/query", {
       method: "POST",
       body: JSON.stringify({ query }),
       headers: {
         "Content-type": "application/json; charset=UTF-8",
       },
+      })
+    .then((res) => res.json())
+    .then((res) => {
+      // TODO: this should just return the rollup CSV path for the other API calls
+      //return res;
+
+      // But for now this is still just getting the actual completion, 
+      // so just set it so things keep kinda working.
+      setMessages(messages => ([...messages, {textContent: res, role: Role.System}]));
+    });
+  }
+
+  const getCompletion = async function(rollupPath: String) {
+    return fetch("/api/completion", {
+      method: "POST",
+      body: JSON.stringify({ rollupPath }),
+      headers: {
+        "Content-type": "application/json; charset=UTF-8",
+      },
     })
-      .then((res) => res.json())
-      .then((res) => {
+    .then((res) => res.json())
+    .then((res) => {
+      setMessages(messages => ([...messages, {textContent: res.completion, role: Role.System}]));
+    });
+  }
+
+  const getGraph = async function(rollupPath: String) {
+    // TODO: replace this with call to vercel python endpoint
+    return fetch("/api/graph", {
+      method: "POST",
+      body: JSON.stringify({ rollupPath }),
+      headers: {
+        "Content-type": "application/json; charset=UTF-8",
+      },
+    })
+    .then((res) => res.json())
+    .then((res) => {
+      setMessages(messages => ([...messages, {imageContentURI: res.graphUrl, role: Role.System}]));
+    });
+  }
+
+  const submitQuestion = (event: FormEvent) => {
+    event.preventDefault();
+    // add user message
+    setMessages(messages => ([...messages, {textContent: query, role: Role.User}]));
+    setAwaitingResponse(true);
+    
+    getRollups(query)
+      .then((rollupPath) => {
+        // TODO: put this back in
+        // return Promise.all([
+        //   getCompletion(rollupPath),
+        //   getGraph(rollupPath),
+        // ]);
+      })
+      .then(() => {
         setQuery("");
-        // add system response message
-        setMessages([...updatedMessages, {content: res, role: Role.System}]);
         setAwaitingResponse(false);
       })
       .catch((err) => {
         console.error(err);
-        setMessages([...updatedMessages, {content: "An error occurred, please try again later!", role: Role.System}]);
+        setMessages(messages => ([...messages, {textContent: "An error occurred, please try again later!", role: Role.System}]));
         setAwaitingResponse(false);
       });
   };

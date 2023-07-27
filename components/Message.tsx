@@ -18,9 +18,10 @@ export default function Message(props: MessageProps) {
         isUserMessage ? "place-self-end text-right" : "place-self-start text-left"
       } space-y-2 whitespace-pre-line`}
     >
-      <div className={messageClassName}>
-        {message.content}
-      </div>
+        <div className={messageClassName}>
+          {message.textContent && (message.textContent)}
+          {message.imageContentURI && (<img src={message.imageContentURI} />)}
+        </div>
     </div>
   );
 }

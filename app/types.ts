@@ -1,4 +1,3 @@
-
 export enum Role { System, User }
 
 export type ModelSummary = {
@@ -53,7 +52,8 @@ export type RollupResult = {
 
 export type ChatMessage = {
     role: Role
-    content: string
+    textContent?: string
+    imageContentURI?: string
 }
 
 export type MemberMetadata = {
