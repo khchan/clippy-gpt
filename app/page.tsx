@@ -23,33 +23,66 @@ export default function Index() {
       });
   }, []);
 
-  useEffect(() => {
-    fetch("/api/python/visualize").then((res) => res.json()).then(console.log);
-  }, []);
-
-  const submitQuestion = (event: FormEvent) => {
-    event.preventDefault();
-    // add user message
-    const updatedMessages = [...messages, {content: query, role: Role.User}]
-    setMessages(updatedMessages);
-    setAwaitingResponse(true);
-    fetch("/api/query", {
+  const getRollups = async function(query: String) {
+    return fetch("/api/query", {
       method: "POST",
       body: JSON.stringify({ query }),
       headers: {
         "Content-type": "application/json; charset=UTF-8",
       },
+      })
+    .then((res) => res.json())
+    .then((res) => res.rollupPath );
+  }
+
+  const getCompletion = async function(rollupPath: String) {
+    return fetch("/api/completion", {
+      method: "POST",
+      body: JSON.stringify({ rollupPath }),
+      headers: {
+        "Content-type": "application/json; charset=UTF-8",
+      },
     })
-      .then((res) => res.json())
-      .then((res) => {
+    .then((res) => res.json())
+    .then(res => {
+      setMessages(messages => ([...messages, {content: res.completion, role: Role.System}]));
+    });
+  }
+
+  const getGraph = async function(rollupPath: String) {
+    return fetch("/api/graph", {
+      method: "POST",
+      body: JSON.stringify({ rollupPath }),
+      headers: {
+        "Content-type": "application/json; charset=UTF-8",
+      },
+    })
+    .then((res) => res.json())
+    .then(res => {
+      setMessages(messages => ([...messages, {content: res.graphUrl, role: Role.System}]));
+    });
+  }
+
+  const submitQuestion = (event: FormEvent) => {
+    event.preventDefault();
+    // add user message
+    setMessages(messages => ([...messages, {content: query, role: Role.User}]));
+    setAwaitingResponse(true);
+    
+    getRollups(query)
+      .then((rollupPath) => {
+        return Promise.all([
+          getCompletion(rollupPath),
+          getGraph(rollupPath),
+        ]);
+      })
+      .then(() => {
         setQuery("");
-        // add system response message
-        setMessages([...updatedMessages, {content: res, role: Role.System}]);
         setAwaitingResponse(false);
       })
       .catch((err) => {
         console.error(err);
-        setMessages([...updatedMessages, {content: "An error occurred, please try again later!", role: Role.System}]);
+        setMessages(messages => ([...messages, {content: "An error occurred, please try again later!", role: Role.System}]));
         setAwaitingResponse(false);
       });
   };
