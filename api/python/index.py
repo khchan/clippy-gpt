@@ -1,7 +1,9 @@
 import os
+import logging
 from fastapi import FastAPI
 from supabase import create_client, Client
 
+logger = logging.getLogger(__name__)
 app = FastAPI()
 
 @app.get("/api/python/visualize")
@@ -18,9 +20,9 @@ def visualize():
 
   url: str = os.environ.get("NEXT_PUBLIC_SUPABASE_URL")
   key: str = os.environ.get("NEXT_SUPABASE_SERVICE_ROLE_KEY")
-  print(url)
-  print(key)
-  
+  logger.info(f'url: {url}')
+  logger.info(f'key: {key}')
+
   supabase: Client = create_client(url, key)
   destination = '/tmp/tmp.csv'
   with open(destination, 'wb+') as f:
