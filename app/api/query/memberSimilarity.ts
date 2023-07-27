@@ -3,7 +3,13 @@ import { SupabaseClient } from '@supabase/auth-helpers-nextjs'
 import { OpenAIEmbeddings } from "langchain/embeddings/openai";
 import { SupabaseVectorStore } from "langchain/vectorstores/supabase";
 
-export async function extractMemberDimensionality(query: string, dimensions: Set<string>, client: SupabaseClient, topK: number): Promise<ModelContext> {
+export async function extractMemberDimensionality(
+    query: string, 
+    dimensions: Set<string>, 
+    client: SupabaseClient, 
+    topK: number,
+    confidenceThreshold: number = -1
+): Promise<ModelContext> {
     const embeddings = new OpenAIEmbeddings({ openAIApiKey: process.env.OPEN_AI_API_KEY });
 
     const memberStore = await SupabaseVectorStore.fromExistingIndex(
@@ -18,10 +24,14 @@ export async function extractMemberDimensionality(query: string, dimensions: Set
     const memberResponse = await memberStore.similaritySearchWithScore(query, topK);
     const members = memberResponse
         .map(([document, score]) => {
-            console.log(`Matched member: "${document.pageContent}" with score: ${score}`);
             return { ...document, score };
         })
+        .filter(({ score }) => confidenceThreshold < 0 || score >= confidenceThreshold)
         .filter(({ metadata }) => dimensions.has(metadata.dimension))
+        .map((document) => {
+            console.log(`[${query}] Matched member: "${document.pageContent}" with score: ${document.score}`);
+            return document;
+        })
         .reduce((acc, next) => {
             const metadata = next.metadata as MemberMetadata;
             (acc[metadata.dimension] = acc[metadata.dimension] || []).push(metadata);

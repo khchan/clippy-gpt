@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
     const rollupResult = await rollup(memberContext);
     const completion = await getCompletion(query, rollupResult);
 
-    const pythonScriptPath = await getGraphPythonScript(query, rollupResult);
+    // const pythonScriptPath = await getGraphPythonScript(query, rollupResult);
 
     return NextResponse.json(completion);
 }
