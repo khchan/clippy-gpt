@@ -13,11 +13,11 @@ Try to calculate as much as you can to return sources and numbers in your answer
 Question: {question}
 Answer: `);
 
-export default async function getCompletion(query: string, client: SupabaseClient): Promise<string> {
+export default async function getCompletion(query: string, rollupResultFileName: string, client: SupabaseClient): Promise<string> {
 
     const {data, error} = await client.storage
         .from('csv_files')
-        .download('rollupResultTable.csv');
+        .download(rollupResultFileName);
 
     const stream = new Readable();
 

@@ -46,7 +46,7 @@ export default function Index() {
           return Promise.all([
               fetch("/api/prompt", {
                   method: "POST",
-                  body: JSON.stringify({ query }),
+                  body: JSON.stringify({ query : query, rollupResult : res}),
                   headers: {
                       "Content-Type": "application/json; charset=UTF-8",
                   },

@@ -4,6 +4,7 @@ import { TABLE_PER_DIM } from "./constants";
 import fs from "fs";
 import {SupabaseClient} from "@supabase/auth-helpers-nextjs";
 import {createClient} from "@supabase/supabase-js";
+import {v4 as uuidv4} from 'uuid';
 
 export default async function rollup(context: ModelContext, client: SupabaseClient) {
     const tableNames = Object.keys(context.get()).map(d => TABLE_PER_DIM[d].tableName);
@@ -56,10 +57,12 @@ export default async function rollup(context: ModelContext, client: SupabaseClie
         }
     });
 
+    const fileName = `${uuidv4()}.csv`
+
     const fileContent = await fs.promises.readFile(dataPath, 'utf-8');
     const { data, error } = await client.storage
         .from('csv_files')
-        .upload('rollupResultTable.csv', fileContent, {upsert: true});
+        .upload(fileName, fileContent, {upsert: true});
 
     return data?.path;
 }
