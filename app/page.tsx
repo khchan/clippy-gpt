@@ -33,7 +33,6 @@ export default function Index() {
     const updatedMessages = [...messages, {textContent: query, role: Role.User}]
     setMessages(updatedMessages);
     setAwaitingResponse(true);
-    //TODO UPDATED HERE
     fetch("/api/query", {
       method: "POST",
       body: JSON.stringify({ query }),
@@ -56,7 +55,7 @@ export default function Index() {
                   }),
               fetch("/api/python/visualize", {
                   method: "POST",
-                  body: JSON.stringify({ query }),
+                  body: JSON.stringify({ res }),
                   headers: {
                       "Content-type": "application/json; charset=UTF-8",
                   },

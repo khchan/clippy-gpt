@@ -3,6 +3,7 @@ from langchain.chat_models import ChatOpenAI
 from langchain.schema import AIMessage, HumanMessage, SystemMessage
 from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
 from supabase import create_client, Client
+from pydantic import BaseModel
 import requests
 import pandas as pd
 import io
@@ -15,8 +16,14 @@ app = FastAPI()
 def unique_values(series):
     return series.drop_duplicates().tolist()
 
-@app.get("/api/python/visualize")
-def visualize(rollupFilename: str):
+class RollupResult(BaseModel):
+    rollupFilename: str
+
+@app.post("/api/python/visualize")
+async def visualize(rollupResult: RollupResult):
+
+    # rollupFilename = "rollupResultTable.csv"
+    print("Entering py part: " + rollupResult.rollupFilename)
 
     # fetch rollup result from supabase by rollupResultId
     supabase_url = os.environ["NEXT_PUBLIC_SUPABASE_URL"]
@@ -27,7 +34,7 @@ def visualize(rollupFilename: str):
 
     # Define the bucket and fetch file url
     bucket = "csv_files"
-    rollup_url =  supabase.storage.from_(bucket).get_public_url(rollupFilename)
+    rollup_url =  supabase.storage.from_(bucket).get_public_url(rollupResult.rollupFilename)
 
     # Download the file
     response = requests.get(rollup_url)
@@ -54,7 +61,7 @@ def visualize(rollupFilename: str):
     prompt2 = "Column names are {}".format(df.columns)
     prompt3 = values_text
     prompt4 = "The value/rollupvalue column represents the intersection of {}".format(df.columns)
-    prompt5 = f"We might have a row like {row_eg} where their intersection has the value: {df['Value'][0]} "
+    prompt5 = f"We might have a row like {row_eg} where their intersection has the value: {df['rollupvalue'][0]} "
 
 
     prompt = prompt1 + prompt2 + prompt3 + prompt4 + prompt5
@@ -83,7 +90,7 @@ def visualize(rollupFilename: str):
       script = matches[0]
 
     # run script
-    script
+    exec(script)
     
     # store image into supabase
     
@@ -92,6 +99,4 @@ def visualize(rollupFilename: str):
 
     # return link on image
     return supabase.storage.from_(bucket).get_public_url(pngName)
-
-
 
