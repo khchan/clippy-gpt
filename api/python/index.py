@@ -65,7 +65,7 @@ async def visualize(rollupResult: RollupResult):
     prompt1 = f"Query: answer the question: {rollupResult.query}"
     prompt2 = "Column names are {}".format(df.columns)
     prompt3 = values_text
-    prompt4 = "The value/rollupvalue column represents the intersection of {}".format(df.columns)
+    prompt4 = "The value/rollupvalue column represents the intersection of {}".format(df.columns.tolist())
     prompt5 = f"We might have a row like {row_eg} where their intersection has the value: {df['rollupvalue'][0]} "
 
     prompt = prompt1 + prompt2 + prompt3 + prompt4 + prompt5
