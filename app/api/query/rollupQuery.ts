@@ -57,12 +57,12 @@ export default async function rollup(context: ModelContext, client: SupabaseClie
         }
     });
 
-    const fileName = `${uuidv4()}.csv`
+    // const fileName = `${uuidv4()}.csv`
 
-    const fileContent = await fs.promises.readFile(dataPath, 'utf-8');
-    const { data, error } = await client.storage
-        .from('csv_files')
-        .upload(fileName, fileContent, {upsert: true});
+    // const fileContent = await fs.promises.readFile(dataPath, 'utf-8');
+    // const { data, error } = await client.storage
+    //     .from('csv_files')
+    //     .upload(fileName, fileContent, {upsert: true});
 
-    return data?.path;
+    return dataPath;
 }

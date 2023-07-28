@@ -15,10 +15,12 @@ export default function Index() {
     fetch("/api/model")
       .then((res) => res.json())
       .then((model: ModelSummary[]) => {
-        const message = `Here's some stats about the loaded model:\n${model.map(m => {
-          return `${m.table} (${m.count})`;
-        }).join(", ")}`
-        setMessages([...messages, {textContent: message, role: Role.System}]);
+        const message = `Here's some stats about the loaded model:\n${model
+          .map((m) => {
+            return `${m.table} (${m.count})`;
+          })
+          .join(", ")}`;
+        setMessages([...messages, { textContent: message, role: Role.System }]);
         setAwaitingResponse(false);
       });
   }, []);
@@ -30,7 +32,10 @@ export default function Index() {
   const submitQuestion = (event: FormEvent) => {
     event.preventDefault();
     // add user message
-    const updatedMessages = [...messages, {textContent: query, role: Role.User}]
+    const updatedMessages = [
+      ...messages,
+      { textContent: query, role: Role.User },
+    ];
     setMessages(updatedMessages);
     setAwaitingResponse(true);
     fetch("/api/query", {
@@ -42,38 +47,46 @@ export default function Index() {
     })
       .then((res) => res.json())
       .then((res) => {
-
-          return Promise.all([
-              fetch("/api/prompt", {
-                  method: "POST",
-                  body: JSON.stringify({ query : query, rollupResult : res}),
-                  headers: {
-                      "Content-Type": "application/json; charset=UTF-8",
-                  },
-              }).then((res) => res.json())
-                  .then((res) => {
-                      return {textContent: res, role: Role.System};
-                  }),
-              fetch("/api/python/visualize", {
-                  method: "POST",
-                  body: JSON.stringify({ query, rollupFilename: res }),
-                  headers: {
-                      "Content-Type": "application/json; charset=UTF-8",
-                  },
-              }).then((res) => res.json())
-                  .then((res) => {
-                      return {imageContentURI: res.graphUrl, role: Role.System};
-                  })]
-          )
-      }).then((res) => {
+        return Promise.all([
+          fetch("/api/prompt", {
+            method: "POST",
+            body: JSON.stringify({ query: query, rollupResult: res }),
+            headers: {
+              "Content-Type": "application/json; charset=UTF-8",
+            },
+          })
+            .then((res) => res.json())
+            .then((res) => {
+              return { textContent: res, role: Role.System };
+            }),
+          fetch("/api/python/visualize", {
+            method: "POST",
+            body: JSON.stringify({ query, rollupFilename: res }),
+            headers: {
+              "Content-Type": "application/json; charset=UTF-8",
+            },
+          })
+            .then((res) => res.json())
+            .then((res) => {
+              return { imageContentURI: res.graphUrl, role: Role.System };
+            }),
+        ]);
+      })
+      .then((res) => {
         //array of updated
         setMessages([...updatedMessages, ...res]);
         setQuery("");
         setAwaitingResponse(false);
-    })
+      })
       .catch((err) => {
         console.error(err);
-        setMessages(messages => ([...messages, {textContent: "An error occurred, please try again later!", role: Role.System}]));
+        setMessages((messages) => [
+          ...messages,
+          {
+            textContent: "An error occurred, please try again later!",
+            role: Role.System,
+          },
+        ]);
         setAwaitingResponse(false);
       });
   };
@@ -83,7 +96,7 @@ export default function Index() {
       <Banner />
 
       <div className="min-h-screen bg-gray-100 p-8 pb-24">
-          <MessageList messages={messages} awaitingResponse={awaitingResponse} />
+        <MessageList messages={messages} awaitingResponse={awaitingResponse} />
       </div>
 
       <ChatInputFooter

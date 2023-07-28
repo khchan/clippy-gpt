@@ -45,7 +45,7 @@ async def visualize(rollupResult: RollupResult):
     # print(response.text)
 
     # Load the data into a pandas DataFrame
-    df = pd.read_csv(io.StringIO(response.text))
+    df = pd.read_csv("/tmp/data.csv")
     # Now df is a DataFrame containing the data from your CSV file
 
     # generate script
@@ -62,24 +62,25 @@ async def visualize(rollupResult: RollupResult):
         if column_name != "rollupvalue":
             row_eg += f"{column_name} : {df[column_name][0]} , \n"
 
-    prompt1 = f"Query: answer the question: {rollupResult.query}" #replace with query from UI
+    prompt1 = f"Query: answer the question: {rollupResult.query}"
     prompt2 = "Column names are {}".format(df.columns)
     prompt3 = values_text
     prompt4 = "The value/rollupvalue column represents the intersection of {}".format(df.columns)
     prompt5 = f"We might have a row like {row_eg} where their intersection has the value: {df['rollupvalue'][0]} "
 
-
     prompt = prompt1 + prompt2 + prompt3 + prompt4 + prompt5
 
     chat = ChatOpenAI(temperature=0, model_name="gpt-4-0613")
 
-    pngName = f"{uuid.uuid4()}.png"
+    pngName = f"/tmp/{uuid.uuid4()}.png"
 
     messages = [
       SystemMessage(
-          content=f"""You are an AI assistant used to visualize tabular data. Assume data.csv is already loaded into a pandas dataframe called df.
-          Given a table, generate valid Python code that shows some relevant visualizations (such as line graph ) using matplotlib and save it to a file called {pngName} but do not show it. Feel free to annotate using words, and try to keep Year discrete or use ranges.
-          Slant the x-ticks.
+          content=f"""You are an AI assistant used to visualize tabular data. 
+          Assume data.csv is already loaded into a pandas dataframe called df.
+          Given a table, generate valid Python code that shows some relevant visualizations (such as line graph ) using matplotlib and save it to a file called {pngName} but do not show it. 
+          Feel free to annotate using words, and try to keep Year discrete or use ranges.
+          Return only the code as plaintext (no markdown or code formatting) and ready to run with no other message. make sure to rotate the x axis labels to make the graph readable
           """
       ),
       HumanMessage(
@@ -95,6 +96,7 @@ async def visualize(rollupResult: RollupResult):
     if matches:
       script = matches[0]
 
+    print(script)
     # run script
     exec(script)
     
