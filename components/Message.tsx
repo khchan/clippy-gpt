@@ -19,7 +19,8 @@ export default function Message(props: MessageProps) {
       } space-y-2 whitespace-pre-line`}
     >
       <div className={messageClassName}>
-        {message.content}
+        {message.textContent && (message.textContent)}
+        {message.imageContentURI && (<img src={message.imageContentURI} />)}
       </div>
     </div>
   );

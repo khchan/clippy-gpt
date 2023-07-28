@@ -73,7 +73,7 @@ export default function Index() {
     })
       .catch((err) => {
         console.error(err);
-        setMessages([...updatedMessages, {content: "An error occurred, please try again later!", role: Role.System}]);
+        setMessages(messages => ([...messages, {content: "An error occurred, please try again later!", role: Role.System}]));
         setAwaitingResponse(false);
       });
   };
