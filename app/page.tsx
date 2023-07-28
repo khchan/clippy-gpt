@@ -18,7 +18,7 @@ export default function Index() {
         const message = `Here's some stats about the loaded model:\n${model.map(m => {
           return `${m.table} (${m.count})`;
         }).join(", ")}`
-        setMessages([...messages, {content: message, role: Role.System}]);
+        setMessages([...messages, {textContent: message, role: Role.System}]);
         setAwaitingResponse(false);
       });
   }, []);
@@ -30,7 +30,7 @@ export default function Index() {
   const submitQuestion = (event: FormEvent) => {
     event.preventDefault();
     // add user message
-    const updatedMessages = [...messages, {content: query, role: Role.User}]
+    const updatedMessages = [...messages, {textContent: query, role: Role.User}]
     setMessages(updatedMessages);
     setAwaitingResponse(true);
     //TODO UPDATED HERE
@@ -52,7 +52,7 @@ export default function Index() {
                   },
               }).then((res) => res.json())
                   .then((res) => {
-                      return {content: res, role: Role.System};
+                      return {textContent: res, role: Role.System};
                   }),
               fetch("/api/python/visualize", {
                   method: "POST",
@@ -62,7 +62,7 @@ export default function Index() {
                   },
               }).then((res) => res.json())
                   .then((res) => {
-                      return {content: res, role: Role.System};
+                      return {imageContentURI: res.graphUrl, role: Role.System};
                   })]
           )
       }).then((res) => {
@@ -73,7 +73,7 @@ export default function Index() {
     })
       .catch((err) => {
         console.error(err);
-        setMessages(messages => ([...messages, {content: "An error occurred, please try again later!", role: Role.System}]));
+        setMessages(messages => ([...messages, {textContent: "An error occurred, please try again later!", role: Role.System}]));
         setAwaitingResponse(false);
       });
   };
