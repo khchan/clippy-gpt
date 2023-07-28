@@ -25,6 +25,9 @@ class ImageResult(BaseModel):
 
 @app.post("/api/python/visualize")
 async def visualize(rollupResult: RollupResult):
+    # ATTN!!!!!!!!!!!!!: I havent checked this script by running locally,
+    #  if anything doesnt work tomorrow morn reference this colab.
+    #  It is the final version for both qs https://colab.research.google.com/drive/11jvgtpyh5P-VlTgk66Z9kaAC-jomWZfs?usp=sharing
 
     # rollupFilename = "rollupResultTable.csv"
     # print("Entering py part: " + rollupResult.rollupFilename)
@@ -45,11 +48,21 @@ async def visualize(rollupResult: RollupResult):
     # print(response.text)
 
     # Load the data into a pandas DataFrame
-    df = pd.read_csv("/tmp/data.csv")
+    df = pd.read_csv(io.StringIO(response.text))
     # Now df is a DataFrame containing the data from your CSV file
+    prompt6 = ""
+    #Rename dataframe columns to be more intuitive
+    if('periodyear' in df.columns.tolist() ):
+        df.rename(columns={"periodyear" : "year"}, inplace=True)
 
-    # generate script
-    chat = ChatOpenAI(temperature=0, streaming=True, callbacks=[StreamingStdOutCallbackHandler()], model_name="gpt-4-0613")
+    if('periodmonth' in df.columns.tolist() ):
+        df.rename(columns={"periodmonth" : "month"}, inplace=True)
+        prompt6 = "The numeric value in month corresponds to the calendar, with 1 as Jan, 2 Feb."
+
+
+    if('rollupvalue' in df.columns.tolist() ):
+        df.rename(columns={"rollupvalue" : "value"}, inplace=True)
+
 
     values_text = ""
     for column_name in df.columns:
@@ -57,31 +70,30 @@ async def visualize(rollupResult: RollupResult):
             unique_values_list = unique_values(df[column_name])
             values_text += f"{column_name} contains {', '.join(map(str, unique_values_list))}\n"
 
-    row_eg = ""
-    for column_name in df.columns:
-        if column_name != "rollupvalue":
-            row_eg += f"{column_name} : {df[column_name][0]} , \n"
+    prompt1 = f"""Query: answer the question as an economist looking at the lowest level of granularity: {rollupResult.query}? """
+    prompt2 = "The Column names are {}. ".format(','.join(df.columns.tolist()))
+    prompt3 = f"{df.columns[0]} contains {', '.join(df.iloc[:, 0].unique())} ;and {df.columns[3]} contains {', '.join(df.iloc[:, 3].unique())}. "
 
-    prompt1 = f"Query: answer the question: {rollupResult.query}"
-    prompt2 = "Column names are {}".format(df.columns)
-    prompt3 = values_text
-    prompt4 = "The value/rollupvalue column represents the intersection of {}".format(df.columns.tolist())
-    prompt5 = f"We might have a row like {row_eg} where their intersection has the value: {df['rollupvalue'][0]} "
+    prompt4 = f"""The value column represents the intersection of the other columns. if we had a row
+    account: Cost, year: 2020, month: 1, Product: Cola, Store: Dallas, value: 300. This means the cost of cola in january of 2020 for the dallas store was 300"""
+    
 
-    prompt = prompt1 + prompt2 + prompt3 + prompt4 + prompt5
+    prompt = prompt1 + prompt2 + prompt3 + prompt4 + prompt6
+
+
+        # generate script
+    chat = ChatOpenAI(temperature=0, streaming=True, callbacks=[StreamingStdOutCallbackHandler()], model_name="gpt-4-0613")
+
 
     chat = ChatOpenAI(temperature=0, model_name="gpt-4-0613")
 
-    pngName = f"/tmp/{uuid.uuid4()}.png"
+    pngName = f"{uuid.uuid4()}.png"
 
     messages = [
       SystemMessage(
-          content=f"""You are an AI assistant used to visualize tabular data. 
-          Assume data.csv is already loaded into a pandas dataframe called df.
-          Given a table, generate valid Python code that shows some relevant visualizations (such as line graph ) using matplotlib and save it to a file called {pngName} but do not show it. 
-          Feel free to annotate using words, and try to keep Year discrete or use ranges.
-          Return only the code as plaintext (no markdown or code formatting) and ready to run with no other message. make sure to rotate the x axis labels to make the graph readable
-          """
+          content=f"""You are an AI assistant used to visualize tabular data. Assume the csv with the table is already loaded into a pandas dataframe df.
+        Given a table, generate valid Python code that shows some relevant visualizations over years(such as line graph  ) useful for product analysis, using matplotlib and pandas df and save it to a file called {pngName} but do not show it .
+        Return only the code as plaintext (no markdown or code formatting) and ready to run with no other message. """
       ),
       HumanMessage(
           content=prompt
@@ -96,7 +108,6 @@ async def visualize(rollupResult: RollupResult):
     if matches:
       script = matches[0]
 
-    print(script)
     # run script
     exec(script)
     
