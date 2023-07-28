@@ -23,9 +23,9 @@ export default function Index() {
       });
   }, []);
 
-  useEffect(() => {
-    fetch("/api/python/visualize").then((res) => res.json()).then(console.log);
-  }, []);
+  // useEffect(() => {
+  //   fetch("/api/python/visualize").then((res) => res.json()).then(console.log);
+  // }, []);
 
   const submitQuestion = (event: FormEvent) => {
     event.preventDefault();
@@ -42,12 +42,13 @@ export default function Index() {
     })
       .then((res) => res.json())
       .then((res) => {
+
           return Promise.all([
               fetch("/api/prompt", {
                   method: "POST",
                   body: JSON.stringify({ query }),
                   headers: {
-                      "Content-type": "application/json; charset=UTF-8",
+                      "Content-Type": "application/json; charset=UTF-8",
                   },
               }).then((res) => res.json())
                   .then((res) => {
@@ -55,9 +56,9 @@ export default function Index() {
                   }),
               fetch("/api/python/visualize", {
                   method: "POST",
-                  body: JSON.stringify({ res }),
+                  body: JSON.stringify({ query, rollupFilename: res }),
                   headers: {
-                      "Content-type": "application/json; charset=UTF-8",
+                      "Content-Type": "application/json; charset=UTF-8",
                   },
               }).then((res) => res.json())
                   .then((res) => {

@@ -2,6 +2,7 @@
 const nextConfig = {
   experimental: {
     serverActions: true,
+    proxyTimeout: 60_000 // limit proxying to 30 seconds 
   },
   rewrites: async () => {
     return [

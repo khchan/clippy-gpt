@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Response
 from langchain.chat_models import ChatOpenAI
 from langchain.schema import AIMessage, HumanMessage, SystemMessage
 from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
@@ -17,13 +17,17 @@ def unique_values(series):
     return series.drop_duplicates().tolist()
 
 class RollupResult(BaseModel):
+    query: str;
     rollupFilename: str
+
+class ImageResult(BaseModel):
+    imageUrl: str
 
 @app.post("/api/python/visualize")
 async def visualize(rollupResult: RollupResult):
 
     # rollupFilename = "rollupResultTable.csv"
-    print("Entering py part: " + rollupResult.rollupFilename)
+    # print("Entering py part: " + rollupResult.rollupFilename)
 
     # fetch rollup result from supabase by rollupResultId
     supabase_url = os.environ["NEXT_PUBLIC_SUPABASE_URL"]
@@ -38,6 +42,7 @@ async def visualize(rollupResult: RollupResult):
 
     # Download the file
     response = requests.get(rollup_url)
+    # print(response.text)
 
     # Load the data into a pandas DataFrame
     df = pd.read_csv(io.StringIO(response.text))
@@ -57,7 +62,7 @@ async def visualize(rollupResult: RollupResult):
         if column_name != "rollupvalue":
             row_eg += f"{column_name} : {df[column_name][0]} , \n"
 
-    prompt1 = "Query: answer the question: What was my year over year revenue growth between 2020-2022?" #replace with query from UI
+    prompt1 = f"Query: answer the question: {rollupResult.query}" #replace with query from UI
     prompt2 = "Column names are {}".format(df.columns)
     prompt3 = values_text
     prompt4 = "The value/rollupvalue column represents the intersection of {}".format(df.columns)
@@ -74,6 +79,7 @@ async def visualize(rollupResult: RollupResult):
       SystemMessage(
           content=f"""You are an AI assistant used to visualize tabular data. Assume data.csv is already loaded into a pandas dataframe called df.
           Given a table, generate valid Python code that shows some relevant visualizations (such as line graph ) using matplotlib and save it to a file called {pngName} but do not show it. Feel free to annotate using words, and try to keep Year discrete or use ranges.
+          Slant the x-ticks.
           """
       ),
       HumanMessage(
@@ -98,5 +104,8 @@ async def visualize(rollupResult: RollupResult):
       res = supabase.storage.from_(bucket).upload(pngName, f.read())
 
     # return link on image
-    return supabase.storage.from_(bucket).get_public_url(pngName)
+    imageUrl = supabase.storage.from_(bucket).get_public_url(pngName)
+    # print(imageUrl)
+
+    return {"graphUrl": imageUrl}
 
