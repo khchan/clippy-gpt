@@ -38,7 +38,7 @@ export default async function rollup(context: ModelContext, client: SupabaseClie
 
     const rollupResult = await sql`${sql.unsafe(finalQuery)}`;
 
-    console.log(rollupResult);
+    // console.log(rollupResult);
 
     //part 2 - store to file, TODO check here
     const columns = rollupResult.columns.map((column) => column.name);
