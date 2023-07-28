@@ -17,7 +17,7 @@ export default async function getCompletion(query: string, client: SupabaseClien
 
     const {data, error} = await client.storage
         .from('csv_files')
-        .download('rollupResult.csv');
+        .download('rollupResultTable.csv');
 
     const stream = new Readable();
 
